@@ -9,7 +9,6 @@ interface LabContextType {
   error: string | null;
   addPatient: (patient: Omit<Patient, 'id'> & { id?: string | null }) => Promise<Patient>;
   createRequest: (patientId: string, testIds: string[], payment: PaymentDetails, referredBy: string) => Promise<string>;
-  updateRequestStatus: (requestId: string, status: RequestStatus) => Promise<void>;
   collectSamples: (requestId: string, collectedSampleIds: string[], comments: string) => Promise<void>;
   updateResults: (requestId: string, testId: string, results: TestResult[]) => Promise<void>;
   updateAllResults: (requestId: string, results: Record<string, TestResult[]>) => Promise<void>;
@@ -74,10 +73,8 @@ export const LabProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return newRequest.labNo;
   };
 
-  const updateRequestStatus = async (requestId: string, status: RequestStatus) => {
-      const updatedRequest = await api.updateRequestStatus(requestId, status);
-      updateStateHelper(updatedRequest);
-  };
+  // FIX: Removed unused `updateRequestStatus` function that was causing a compilation error.
+  // Status is updated via more specific actions like `collectSamples` or `verifyRequest`.
   
   const collectSamples = async (requestId: string, collectedSampleIds: string[], comments: string) => {
     const updatedRequest = await api.collectSamples(requestId, collectedSampleIds, comments);
@@ -120,7 +117,6 @@ export const LabProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       error,
       addPatient, 
       createRequest, 
-      updateRequestStatus, 
       collectSamples,
       updateResults,
       updateAllResults,
