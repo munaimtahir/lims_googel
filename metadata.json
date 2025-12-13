@@ -1,0 +1,5 @@
+{
+  "name": "MediLab Pro LMS",
+  "description": "A comprehensive Laboratory Management System handling patient registration, sample collection, result entry with AI interpretation, and report generation.",
+  "requestFramePermissions": []
+}
