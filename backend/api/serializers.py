@@ -82,6 +82,29 @@ class LabRequestCreateSerializer(serializers.Serializer):
     payment = serializers.JSONField()
     referred_by = serializers.CharField(required=False, allow_blank=True)
     
+    def validate_payment(self, value):
+        """Validate and recalculate payment totals"""
+        # Extract values with defaults
+        total = value.get('totalAmount', 0)
+        discount = value.get('discountAmount', 0)
+        paid = value.get('paidAmount', 0)
+        
+        # Calculate net payable (total - discount, but not negative)
+        net_payable = max(0, total - discount)
+        
+        # Calculate balance due (net_payable - paid, but not negative)
+        balance = max(0, net_payable - paid)
+        
+        # Return recalculated payment details
+        return {
+            'totalAmount': total,
+            'discountAmount': discount,
+            'discountPercent': value.get('discountPercent', 0),
+            'netPayable': net_payable,
+            'paidAmount': paid,
+            'balanceDue': balance,
+        }
+    
     def create(self, validated_data):
         patient_id = validated_data['patient']
         test_ids = validated_data['test_ids']

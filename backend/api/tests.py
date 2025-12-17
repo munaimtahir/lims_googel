@@ -316,6 +316,32 @@ class TestLabRequestAPI(APITestCase):
         self.assertTrue(response.data['id'].startswith('REQ'))
         self.assertEqual(response.data['status'], 'REGISTERED')
     
+    def test_payment_calculation(self):
+        """Test payment calculation is done server-side"""
+        data = {
+            'patient': self.patient.id,
+            'test_ids': [self.lab_test.id],
+            'payment': {
+                'totalAmount': 1000,
+                'discountAmount': 100,
+                'paidAmount': 500,
+                # netPayable and balanceDue should be recalculated
+                'netPayable': 0,  # Should be recalculated to 900
+                'balanceDue': 0,  # Should be recalculated to 400
+            },
+            'referred_by': 'Dr. Smith'
+        }
+        response = self.client.post('/api/requests/', data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        # Check that payment was recalculated
+        payment = response.data['payment']
+        self.assertEqual(payment['totalAmount'], 1000)
+        self.assertEqual(payment['discountAmount'], 100)
+        self.assertEqual(payment['netPayable'], 900)  # 1000 - 100
+        self.assertEqual(payment['paidAmount'], 500)
+        self.assertEqual(payment['balanceDue'], 400)  # 900 - 500
+    
     def test_collect_samples(self):
         """Test collecting samples for a request"""
         lab_request = LabRequest.objects.create(
