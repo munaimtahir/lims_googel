@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
-from api.models import LabTest, Patient, LabRequest
-from api.constants import AVAILABLE_TESTS, MOCK_PATIENTS
+from api.models import LabTest, Patient, LabRequest, SampleType
+from api.constants import AVAILABLE_TESTS, MOCK_PATIENTS, SAMPLE_TYPES
 
 
 class Command(BaseCommand):
@@ -8,6 +8,21 @@ class Command(BaseCommand):
     
     def handle(self, *args, **options):
         self.stdout.write('Seeding database...')
+        
+        # Seed sample types
+        self.stdout.write('Creating sample types...')
+        for sample_type_data in SAMPLE_TYPES:
+            sample_type, created = SampleType.objects.get_or_create(
+                id=sample_type_data['id'],
+                defaults={
+                    'name': sample_type_data['name'],
+                    'tube_color': sample_type_data['tube_color'],
+                }
+            )
+            if created:
+                self.stdout.write(f'  Created sample type: {sample_type.name}')
+            else:
+                self.stdout.write(f'  Sample type already exists: {sample_type.name}')
         
         # Seed lab tests
         self.stdout.write('Creating lab tests...')

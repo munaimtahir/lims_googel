@@ -65,6 +65,15 @@ The server will start on `http://localhost:8000`. The frontend application is co
 
 ## API Endpoints
 
+### Documentation
+- `GET /api/schema/` - OpenAPI 3.0 schema (JSON)
+- `GET /api/docs/` - Swagger UI interactive documentation
+- `GET /api/redoc/` - ReDoc documentation
+
+### Sample Types
+- `GET /api/sample-types/` - List all sample types
+- `GET /api/sample-types/{id}/` - Get sample type details
+
 ### Patients
 - `GET /api/patients/` - List all patients
 - `POST /api/patients/` - Create a new patient
@@ -74,6 +83,7 @@ The server will start on `http://localhost:8000`. The frontend application is co
 ### Lab Tests
 - `GET /api/tests/` - List all available tests
 - `GET /api/tests/{id}/` - Get test details
+- `GET /api/tests/{id}/parameters/` - Get test parameters
 
 ### Lab Requests
 - `GET /api/requests/` - List all requests
@@ -152,8 +162,36 @@ backend/
 
 5. **Run tests:**
    ```bash
+   pytest
+   # Or with Django test runner
    python manage.py test
    ```
+
+6. **View API schema:**
+   ```bash
+   # Start the server and visit:
+   # http://localhost:8000/api/docs/     (Swagger UI)
+   # http://localhost:8000/api/redoc/    (ReDoc)
+   # http://localhost:8000/api/schema/   (OpenAPI JSON)
+   ```
+
+## Testing
+
+The backend includes comprehensive test coverage for all critical flows:
+
+- **Model validation**: Status transitions, immutability after verification
+- **Patient API**: CRUD operations
+- **Sample Type API**: Catalog endpoints
+- **Lab Test API**: Test listings and parameters
+- **Lab Request API**: Complete workflow from registration to verification
+- **AI Interpretation**: Mocked Gemini API calls
+
+Run tests with:
+```bash
+pytest                    # Run all tests
+pytest -v                 # Verbose output
+pytest api/tests.py -k test_workflow  # Run specific test
+```
 
 ## Troubleshooting
 

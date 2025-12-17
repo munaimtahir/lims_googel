@@ -1,6 +1,20 @@
 from django.db import models
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 import uuid
+
+
+class SampleType(models.Model):
+    """Sample type model for storing sample/tube type definitions"""
+    id = models.CharField(max_length=50, primary_key=True)
+    name = models.CharField(max_length=200)
+    tube_color = models.CharField(max_length=7)  # Hex color code
+    
+    class Meta:
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
 
 
 class Patient(models.Model):
@@ -69,23 +83,68 @@ class LabRequest(models.Model):
         ('VERIFIED', 'Verified'),
     ]
     
+    # Valid status transitions
+    STATUS_TRANSITIONS = {
+        'REGISTERED': ['COLLECTED'],
+        'COLLECTED': ['ANALYZED'],
+        'ANALYZED': ['VERIFIED'],
+        'VERIFIED': [],  # No transitions allowed from VERIFIED
+    }
+    
     id = models.CharField(max_length=20, primary_key=True, editable=False)
     lab_no = models.CharField(max_length=30, unique=True, editable=False)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='requests')
     date = models.DateTimeField(auto_now_add=True)
     tests = models.ManyToManyField(LabTest, related_name='requests')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='REGISTERED')
-    results = models.JSONField(default=dict)  # {test_id: [{parameterId, value, flag}]}
-    payment = models.JSONField(default=dict)  # PaymentDetails object
+    results = models.JSONField(default=dict, blank=True)  # {test_id: [{parameterId, value, flag}]}
+    payment = models.JSONField(default=dict, blank=True)  # PaymentDetails object
     referred_by = models.CharField(max_length=200, blank=True)
     comments = models.TextField(blank=True)
     ai_interpretation = models.TextField(blank=True)
-    collected_samples = models.JSONField(default=list)  # Array of sample type IDs
+    collected_samples = models.JSONField(default=list, blank=True)  # Array of sample type IDs
     phlebotomy_comments = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    def clean(self):
+        """Validate status transitions and immutability after VERIFIED"""
+        super().clean()
+        
+        # Check if this is an update (not a new instance)
+        if self.pk:
+            try:
+                old_instance = LabRequest.objects.get(pk=self.pk)
+                
+                # Enforce immutability after VERIFIED
+                if old_instance.status == 'VERIFIED':
+                    # Only allow reading and AI interpretation updates
+                    if (old_instance.results != self.results or 
+                        old_instance.comments != self.comments or
+                        old_instance.status != self.status or
+                        old_instance.collected_samples != self.collected_samples or
+                        old_instance.phlebotomy_comments != self.phlebotomy_comments):
+                        raise ValidationError(
+                            'Cannot modify results, comments, status, or samples after verification. '
+                            'Only AI interpretation can be updated.'
+                        )
+                
+                # Validate status transitions
+                if old_instance.status != self.status:
+                    allowed_transitions = self.STATUS_TRANSITIONS.get(old_instance.status, [])
+                    if self.status not in allowed_transitions:
+                        raise ValidationError(
+                            f'Invalid status transition from {old_instance.status} to {self.status}. '
+                            f'Allowed transitions: {", ".join(allowed_transitions) if allowed_transitions else "None"}'
+                        )
+            except LabRequest.DoesNotExist:
+                pass
+    
     def save(self, *args, **kwargs):
+        # Only validate on updates, not on creation
+        if self.pk:
+            self.full_clean()
+        
         if not self.id:
             # Generate request ID using UUID for uniqueness
             self.id = f'REQ{uuid.uuid4().hex[:8].upper()}'

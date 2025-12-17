@@ -2,18 +2,26 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ValidationError
 import logging
 
-from .models import Patient, LabTest, LabRequest
+from .models import Patient, LabTest, LabRequest, SampleType
 from .serializers import (
     PatientSerializer, LabTestSerializer, LabRequestSerializer,
     LabRequestCreateSerializer, CollectSamplesSerializer,
     UpdateResultsSerializer, UpdateAllResultsSerializer,
-    UpdateCommentSerializer, VerifyRequestSerializer
+    UpdateCommentSerializer, VerifyRequestSerializer,
+    SampleTypeSerializer, TestParameterSerializer
 )
 from .services.ai_service import ai_service
 
 logger = logging.getLogger(__name__)
+
+
+class SampleTypeViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for SampleType (read-only)"""
+    queryset = SampleType.objects.all()
+    serializer_class = SampleTypeSerializer
 
 
 class PatientViewSet(viewsets.ModelViewSet):
@@ -61,6 +69,13 @@ class LabTestViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for LabTest (read-only)"""
     queryset = LabTest.objects.all()
     serializer_class = LabTestSerializer
+    
+    @action(detail=True, methods=['get'])
+    def parameters(self, request, pk=None):
+        """Get parameters for a specific test"""
+        lab_test = self.get_object()
+        serializer = TestParameterSerializer(lab_test.parameters, many=True)
+        return Response(serializer.data)
 
 
 class LabRequestViewSet(viewsets.ModelViewSet):
@@ -89,7 +104,11 @@ class LabRequestViewSet(viewsets.ModelViewSet):
         lab_request.collected_samples = serializer.validated_data['collected_samples']
         lab_request.phlebotomy_comments = serializer.validated_data.get('phlebotomy_comments', '')
         lab_request.status = 'COLLECTED'
-        lab_request.save()
+        
+        try:
+            lab_request.save()
+        except ValidationError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
         response_serializer = LabRequestSerializer(lab_request)
         return Response(response_serializer.data)
@@ -109,7 +128,11 @@ class LabRequestViewSet(viewsets.ModelViewSet):
         current_results[test_id] = results
         lab_request.results = current_results
         lab_request.status = 'ANALYZED'
-        lab_request.save()
+        
+        try:
+            lab_request.save()
+        except ValidationError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
         response_serializer = LabRequestSerializer(lab_request)
         return Response(response_serializer.data)
@@ -124,7 +147,11 @@ class LabRequestViewSet(viewsets.ModelViewSet):
         # Update all results
         lab_request.results = serializer.validated_data['results']
         lab_request.status = 'ANALYZED'
-        lab_request.save()
+        
+        try:
+            lab_request.save()
+        except ValidationError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
         response_serializer = LabRequestSerializer(lab_request)
         return Response(response_serializer.data)
@@ -137,7 +164,11 @@ class LabRequestViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         
         lab_request.comments = serializer.validated_data['comments']
-        lab_request.save()
+        
+        try:
+            lab_request.save()
+        except ValidationError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
         response_serializer = LabRequestSerializer(lab_request)
         return Response(response_serializer.data)
@@ -152,7 +183,11 @@ class LabRequestViewSet(viewsets.ModelViewSet):
         # Update results and status
         lab_request.results = serializer.validated_data['results']
         lab_request.status = 'VERIFIED'
-        lab_request.save()
+        
+        try:
+            lab_request.save()
+        except ValidationError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
         response_serializer = LabRequestSerializer(lab_request)
         return Response(response_serializer.data)

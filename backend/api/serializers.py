@@ -1,5 +1,14 @@
 from rest_framework import serializers
-from .models import Patient, LabTest, LabRequest
+from .models import Patient, LabTest, LabRequest, SampleType
+
+
+class SampleTypeSerializer(serializers.ModelSerializer):
+    """Serializer for SampleType model"""
+    tubeColor = serializers.CharField(source='tube_color')
+    
+    class Meta:
+        model = SampleType
+        fields = ['id', 'name', 'tubeColor']
 
 
 class PatientSerializer(serializers.ModelSerializer):
@@ -13,10 +22,19 @@ class PatientSerializer(serializers.ModelSerializer):
 
 class LabTestSerializer(serializers.ModelSerializer):
     """Serializer for LabTest model"""
+    sampleTypeId = serializers.CharField(source='sample_type_id')
     
     class Meta:
         model = LabTest
-        fields = ['id', 'name', 'price', 'category', 'sample_type_id', 'parameters']
+        fields = ['id', 'name', 'price', 'category', 'sampleTypeId', 'parameters']
+
+
+class TestParameterSerializer(serializers.Serializer):
+    """Serializer for test parameters (from LabTest.parameters JSONField)"""
+    id = serializers.CharField()
+    name = serializers.CharField()
+    unit = serializers.CharField()
+    referenceRange = serializers.CharField()
 
 
 class LabRequestSerializer(serializers.ModelSerializer):

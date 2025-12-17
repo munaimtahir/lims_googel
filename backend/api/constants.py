@@ -1,5 +1,13 @@
 # Lab test definitions and mock data
 
+SAMPLE_TYPES = [
+    {'id': 'edta', 'name': 'EDTA (Purple)', 'tube_color': '#a855f7'},
+    {'id': 'serum', 'name': 'Serum (Gold/Red)', 'tube_color': '#f59e0b'},
+    {'id': 'urine', 'name': 'Urine (Yellow)', 'tube_color': '#eab308'},
+    {'id': 'heparin', 'name': 'Heparin (Green)', 'tube_color': '#22c55e'},
+    {'id': 'citrate', 'name': 'Citrate (Blue)', 'tube_color': '#3b82f6'},
+]
+
 AVAILABLE_TESTS = [
     {
         'id': 'cbc',
