@@ -47,3 +47,4 @@ def validate_and_recalculate_payment(sender, instance, **kwargs):
 def update_related_lab_request_names(sender, instance, **kwargs):
     """Update patient_name in all related LabRequests when Patient name changes"""
     LabRequest.objects.filter(patient=instance).update(patient_name=instance.name)
+

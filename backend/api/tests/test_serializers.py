@@ -122,3 +122,4 @@ class TestLabRequestCreateSerializer:
         serializer = LabRequestCreateSerializer(data=data)
         # Should fail validation
         assert not serializer.is_valid()
+

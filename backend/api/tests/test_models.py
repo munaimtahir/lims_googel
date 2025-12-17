@@ -214,3 +214,4 @@ class TestTestParameter:
         assert parameter.id == 'hb'
         assert parameter.test == lab_test
         assert parameter.name == 'Hemoglobin'
+

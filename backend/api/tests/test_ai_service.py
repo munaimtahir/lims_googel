@@ -97,3 +97,4 @@ class TestAIService:
         assert 'John Doe' in call_args
         assert '34' in call_args
         assert 'Hemoglobin' in call_args
+
