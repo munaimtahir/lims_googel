@@ -4,46 +4,46 @@ overview: Complete Docker-based deployment plan for LIMS application on VPS (139
 todos:
   - id: "1"
     content: Create Dockerfile for React frontend - multi-stage build (build + nginx serve)
-    status: in_progress
+    status: completed
   - id: "2"
     content: Create Dockerfile for Django backend - install dependencies, collect static files, run with Gunicorn
-    status: pending
+    status: completed
   - id: "3"
     content: Update backend/medilab_proj/settings.py - add PostgreSQL config, update ALLOWED_HOSTS with 139.162.9.224, update CORS settings
-    status: pending
+    status: completed
   - id: "4"
     content: Update services/api.ts - make API_BASE_URL use environment variable (default to VPS IP)
-    status: pending
+    status: completed
   - id: "5"
     content: Create docker-compose.yml - define services (frontend, backend, postgres, nginx) with proper networking and volumes
-    status: pending
+    status: completed
     dependencies:
       - "1"
       - "2"
   - id: "6"
     content: Create nginx/nginx.conf - configure reverse proxy for backend API and static file serving for frontend
-    status: pending
+    status: completed
   - id: "7"
     content: Create .env.production.example and backend/.env.production.example - template files with VPS IP and required variables
-    status: pending
+    status: completed
   - id: "8"
     content: Update backend/requirements.txt - add psycopg2-binary for PostgreSQL support and gunicorn for production server
-    status: pending
+    status: completed
   - id: "9"
     content: Create deploy.sh script - automated deployment script with Docker commands, environment setup, and health checks
-    status: pending
+    status: completed
     dependencies:
       - "5"
       - "6"
   - id: "10"
     content: Create .dockerignore files - optimize Docker builds by excluding unnecessary files
-    status: pending
+    status: completed
   - id: "11"
     content: Update vite.config.ts - add production build optimizations and environment variable support
-    status: pending
+    status: completed
   - id: "12"
     content: Create README_DEPLOYMENT.md - deployment documentation with step-by-step instructions
-    status: pending
+    status: completed
     dependencies:
       - "9"
 ---
