@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'drf_spectacular',
     'api',
 ]
 
@@ -127,6 +128,16 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# drf-spectacular settings for OpenAPI schema generation
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'MediLab Pro LIMS API',
+    'DESCRIPTION': 'Laboratory Information Management System API',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
 }
 
 # Gemini API Key for AI interpretation

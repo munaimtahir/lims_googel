@@ -1,5 +1,18 @@
 from django.contrib import admin
-from .models import Patient, LabTest, LabRequest
+from .models import Patient, LabTest, LabRequest, SampleType, TestParameter
+
+
+@admin.register(SampleType)
+class SampleTypeAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'tube_color']
+    search_fields = ['id', 'name']
+
+
+class TestParameterInline(admin.TabularInline):
+    """Inline admin for TestParameter"""
+    model = TestParameter
+    extra = 0
+    fields = ['id', 'name', 'unit', 'reference_range']
 
 
 @admin.register(Patient)
@@ -12,22 +25,23 @@ class PatientAdmin(admin.ModelAdmin):
 
 @admin.register(LabTest)
 class LabTestAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'category', 'price', 'sample_type_id']
-    list_filter = ['category', 'sample_type_id']
+    list_display = ['id', 'name', 'category', 'price', 'sample_type']
+    list_filter = ['category', 'sample_type']
     search_fields = ['name', 'category']
+    inlines = [TestParameterInline]
 
 
 @admin.register(LabRequest)
 class LabRequestAdmin(admin.ModelAdmin):
-    list_display = ['id', 'lab_no', 'patient', 'status', 'date', 'created_at']
+    list_display = ['id', 'lab_no', 'patient', 'patient_name', 'status', 'date', 'created_at']
     list_filter = ['status', 'created_at']
-    search_fields = ['id', 'lab_no', 'patient__name']
-    readonly_fields = ['id', 'lab_no', 'created_at', 'updated_at']
+    search_fields = ['id', 'lab_no', 'patient__name', 'patient_name']
+    readonly_fields = ['id', 'lab_no', 'patient_name', 'created_at', 'updated_at']
     filter_horizontal = ['tests']
     
     fieldsets = (
         ('Basic Information', {
-            'fields': ('id', 'lab_no', 'patient', 'status', 'tests')
+            'fields': ('id', 'lab_no', 'patient', 'patient_name', 'status', 'tests')
         }),
         ('Payment Details', {
             'fields': ('payment',)
