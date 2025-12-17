@@ -1,3 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Django
+db.sqlite3
+*.log
+staticfiles/
+
+# Environment variables
+.env
+
+# Node modules (if any)
 node_modules
 dist
-.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Old backup files
+*_old.py
