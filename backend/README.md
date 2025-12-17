@@ -30,11 +30,16 @@ This directory contains the Django + Django REST Framework backend for the MediL
     pip install -r requirements.txt
     ```
 
-4.  **Set up your API Key:**
-    -   Create a file named `.env` in this `backend` directory.
-    -   Add the following line to the `.env` file, replacing the placeholder with your actual Google Gemini API key:
+4.  **Set up your environment variables:**
+    -   Copy the example environment file:
+        ```bash
+        cp .env.example .env
+        ```
+    -   Edit the `.env` file and update the following variables:
         ```
         GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
+        SECRET_KEY=your-secret-key-here
+        DEBUG=True
         ```
 
 5.  **Set up the database:**
@@ -47,6 +52,9 @@ This directory contains the Django + Django REST Framework backend for the MediL
     ```bash
     python manage.py seed_data
     ```
+    This will populate the database with:
+    - All available lab tests (CBC, Lipid Profile, LFT, etc.)
+    - Sample patients for testing
 
 7.  **Run the development server:**
     ```bash
@@ -54,3 +62,101 @@ This directory contains the Django + Django REST Framework backend for the MediL
     ```
 
 The server will start on `http://localhost:8000`. The frontend application is configured to communicate with this address.
+
+## API Endpoints
+
+### Patients
+- `GET /api/patients/` - List all patients
+- `POST /api/patients/` - Create a new patient
+- `PUT /api/patients/{id}/` - Update a patient
+- `GET /api/patients/{id}/` - Get patient details
+
+### Lab Tests
+- `GET /api/tests/` - List all available tests
+- `GET /api/tests/{id}/` - Get test details
+
+### Lab Requests
+- `GET /api/requests/` - List all requests
+- `POST /api/requests/` - Create a new request
+- `GET /api/requests/{id}/` - Get request details
+- `POST /api/requests/{id}/collect/` - Collect samples
+- `POST /api/requests/{id}/update_results/` - Update test results
+- `POST /api/requests/{id}/update_all_results/` - Update all results
+- `POST /api/requests/{id}/verify/` - Verify and finalize
+- `POST /api/requests/{id}/update_comment/` - Update comments
+- `POST /api/requests/{id}/interpret/` - Trigger AI interpretation
+
+## Django Admin
+
+Access the Django admin interface at `http://localhost:8000/admin/`
+
+To create a superuser:
+```bash
+python manage.py createsuperuser
+```
+
+## Project Structure
+
+```
+backend/
+├── manage.py              # Django management script
+├── requirements.txt       # Python dependencies
+├── .env                   # Environment variables (not in git)
+├── .env.example          # Environment template
+│
+├── medilab_proj/          # Django project configuration
+│   ├── settings.py        # Project settings
+│   ├── urls.py            # Root URL configuration
+│   ├── wsgi.py            # WSGI application
+│   └── asgi.py            # ASGI application
+│
+└── api/                   # Main Django app
+    ├── models.py          # Database models
+    ├── serializers.py     # DRF serializers
+    ├── views.py           # API views
+    ├── urls.py            # App URL patterns
+    ├── admin.py           # Django admin configuration
+    ├── constants.py       # Lab test definitions
+    │
+    ├── migrations/        # Database migrations
+    │
+    ├── management/
+    │   └── commands/
+    │       └── seed_data.py  # Seed initial data
+    │
+    └── services/
+        └── ai_service.py  # Google Gemini AI integration
+```
+
+## Development Tips
+
+1. **Check for issues:**
+   ```bash
+   python manage.py check
+   ```
+
+2. **Create new migrations after model changes:**
+   ```bash
+   python manage.py makemigrations
+   ```
+
+3. **View SQL for migrations:**
+   ```bash
+   python manage.py sqlmigrate api 0001
+   ```
+
+4. **Open Django shell:**
+   ```bash
+   python manage.py shell
+   ```
+
+5. **Run tests:**
+   ```bash
+   python manage.py test
+   ```
+
+## Troubleshooting
+
+- **CORS errors:** Make sure `CORS_ALLOWED_ORIGINS` in `.env` includes your frontend URL
+- **Database errors:** Delete `db.sqlite3` and run migrations again
+- **AI interpretation not working:** Check that `GEMINI_API_KEY` is set in `.env`
