@@ -23,6 +23,8 @@ class Patient(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             # Generate patient ID
+            # NOTE: This has a potential race condition. For production use,
+            # consider using database sequences or UUID-based IDs.
             last_patient = Patient.objects.order_by('-id').first()
             if last_patient:
                 try:
@@ -85,11 +87,13 @@ class LabRequest(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.id:
-            # Generate request ID
+            # Generate request ID using UUID for uniqueness
             self.id = f'REQ{uuid.uuid4().hex[:8].upper()}'
         
         if not self.lab_no:
             # Generate lab number with date
+            # NOTE: This has a potential race condition for concurrent requests.
+            # For production, consider using database-level sequences or atomic counters.
             today = timezone.now().strftime('%Y%m%d')
             # Get count of requests created today
             today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)

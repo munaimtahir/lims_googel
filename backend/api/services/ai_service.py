@@ -48,7 +48,7 @@ class AIService:
         
         except Exception as e:
             logger.error(f"Error generating AI interpretation: {str(e)}")
-            return f"Error generating AI interpretation: {str(e)}"
+            return "Unable to generate AI interpretation at this time. Please try again later."
     
     def _create_prompt(self, patient_data, test_results):
         """Create a structured prompt for the AI model"""

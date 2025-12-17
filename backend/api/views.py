@@ -22,7 +22,12 @@ class PatientViewSet(viewsets.ModelViewSet):
     serializer_class = PatientSerializer
     
     def create(self, request):
-        """Create or update a patient"""
+        """
+        Create or update a patient
+        NOTE: This handles both create and update for frontend compatibility.
+        The frontend sends patient data with or without an ID.
+        For strict REST compliance, use separate endpoints.
+        """
         patient_id = request.data.get('id')
         
         if patient_id:
@@ -203,6 +208,6 @@ class LabRequestViewSet(viewsets.ModelViewSet):
         except Exception as e:
             logger.error(f"Error in AI interpretation: {str(e)}")
             return Response(
-                {'detail': f'Error generating interpretation: {str(e)}'},
+                {'detail': 'An error occurred while generating AI interpretation. Please try again later.'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
