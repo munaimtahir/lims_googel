@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: medilab_postgres
+    env_file:
+      - backend/.env.production
+    environment:
+      POSTGRES_DB: ${DB_NAME:-medilab_db}
+      POSTGRES_USER: ${DB_USER:-medilab_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-medilab_password_change_me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - medilab_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-medilab_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: medilab_backend
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 medilab_proj.wsgi:application"
+    volumes:
+      - ./backend:/app
+      - backend_static:/app/staticfiles
+    env_file:
+      - backend/.env.production
+    environment:
+      - DEBUG=False
+      - DB_ENGINE=postgresql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-medilab_db}
+      - DB_USER=${DB_USER:-medilab_user}
+      - DB_PASSWORD=${DB_PASSWORD:-medilab_password_change_me}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - medilab_network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://139.162.9.224/api}
+    container_name: medilab_frontend
+    volumes:
+      - frontend_dist:/usr/share/nginx/html
+    command: ["tail", "-f", "/dev/null"]
+    networks:
+      - medilab_network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: medilab_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - frontend_dist:/usr/share/nginx/html:ro
+      - backend_static:/app/staticfiles:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - medilab_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  backend_static:
+  frontend_dist:
+
+networks:
+  medilab_network:
+    driver: bridge
+

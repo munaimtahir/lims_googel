@@ -1,6 +1,8 @@
 import { Patient, LabRequest, RequestStatus, PaymentDetails, TestResult } from '../types';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+// Use environment variable for API URL, fallback to VPS IP in production or localhost for dev
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+                     (import.meta.env.PROD ? 'http://139.162.9.224/api' : 'http://localhost:8000/api');
 
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
