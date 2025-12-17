@@ -1,2 +1,10 @@
-~�&v6���{k������i٢����ڞ
-��l�jh��Z�
+"""
+URL configuration for medilab_proj project.
+"""
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('api.urls')),
+]
