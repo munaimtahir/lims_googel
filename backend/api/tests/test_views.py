@@ -256,3 +256,4 @@ class TestLabRequestViewSet:
         response = api_client.post(url, data, format='json')
         assert response.status_code == 400
 
+

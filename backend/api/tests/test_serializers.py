@@ -123,3 +123,4 @@ class TestLabRequestCreateSerializer:
         # Should fail validation
         assert not serializer.is_valid()
 
+

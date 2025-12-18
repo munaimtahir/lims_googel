@@ -68,3 +68,4 @@ class TestSeedDataCommand:
         assert Patient.objects.filter(id='P001').exists()
         assert Patient.objects.filter(id='P002').exists()
 
+
